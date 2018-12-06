@@ -43,7 +43,7 @@ public class TicketingDS implements TicketingSystem {
     private static int totalStation = 0;
     private static int nowCoach = 0;
     private static int nowSeat = 0;
-    private static AtomicInteger totalNum;
+    private static int totalNum;
 
     public TicketingDS(int routenum, int coachnum, int seatnum, int stationnum, int threadnum) {
     /*routes = new Route[routenum];
@@ -69,10 +69,10 @@ public class TicketingDS implements TicketingSystem {
         }
     }
     ticketNum = new AtomicInteger[routenum][stationnum-1];
-    totalNum = new AtomicInteger(coachnum*seatnum);
+    totalNum = coachnum*seatnum;
     for(int k=0;k<routenum;k++){
         for(int i=0;i<stationnum-1;i++){
-            ticketNum[k][i] =  totalNum;
+            ticketNum[k][i] =  new AtomicInteger(totalNum);
         }// make query faster
     }
     }
@@ -84,7 +84,7 @@ public class TicketingDS implements TicketingSystem {
         int tmpSeat = nowSeat;
         int tmpD = departure - 1;
         int tmpA = arrival - 1;
-        for(int i=tmpCoach+1;i!=tmpCoach;i++){
+        for(int i=tmpCoach+1;;i++){
             if(inquiry(route,departure,arrival)==0)return null;
             i = i%totalCoach;
             for(int j=tmpSeat+1;j!=tmpSeat;j++){
@@ -100,9 +100,15 @@ public class TicketingDS implements TicketingSystem {
                 if(ifSuccess){
                     for(int tD=tmpD;tD<tmpA;tD++){
                         ticketNum[route-1][tD].getAndDecrement();
+                        //System.out.println(totalNum.get());
                     }
                     result.coach = tmpCoach;
                     result.seat = tmpSeat;
+                    result.passenger = passenger;
+                    result.route = route;
+                    result.arrival = arrival;
+                    result.departure = departure;
+                    result.tid = tid.getAndIncrement();
                     return result;
                 }
                 for(;k>=tmpD;k--){
@@ -110,18 +116,12 @@ public class TicketingDS implements TicketingSystem {
                 }
             }
         }
-
-        result.passenger = passenger;
-        result.route = route;
-        result.arrival = arrival;
-        result.departure = departure;
-        result.tid = tid.getAndIncrement();
-        return result;
+        //return null;
     }
 
     @Override
     public int inquiry(int route, int departure, int arrival) {
-        int result = totalNum.get();
+        int result = totalNum;
         int tmpD = departure - 1;
         int tmpA = arrival - 1;
         for(int i=tmpD;i<tmpA;i++){

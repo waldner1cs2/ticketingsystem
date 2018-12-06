@@ -90,7 +90,7 @@ public class Trace {
             				int route = rand.nextInt(routenum) + 1;
             				int departure = rand.nextInt(stationnum - 1) + 1;
             				int arrival = departure + rand.nextInt(stationnum - departure) + 1; // arrival is always greater than departure
-							System.out.println("now " + departure+ " " + arrival);
+							//System.out.println("now " + departure+ " " + arrival);
             				int leftTicket = tds.inquiry(route, departure, arrival);
             				System.out.println("RemainTicket" + " " + leftTicket + " " + route+ " " + departure+ " " + arrival);
     						System.out.flush();  
