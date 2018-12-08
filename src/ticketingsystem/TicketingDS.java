@@ -40,7 +40,6 @@ public class TicketingDS implements TicketingSystem {
 
     private static int totalCoach = 0;
     private static int totalSeat = 0;
-    private static int totalStation = 0;
     private static int nowCoach = 0;
     private static int nowSeat = 0;
     private static int totalNum;
@@ -53,7 +52,6 @@ public class TicketingDS implements TicketingSystem {
     tid.set(0);
     totalCoach = coachnum;
     totalSeat = seatnum;
-    totalStation = stationnum;
 
     routes = new AtomicBoolean[routenum][][][];
     for(int i=0;i<routenum;i++){
@@ -109,6 +107,8 @@ public class TicketingDS implements TicketingSystem {
                     result.arrival = arrival;
                     result.departure = departure;
                     result.tid = tid.getAndIncrement();
+                    nowCoach = tmpCoach;
+                    nowSeat = tmpSeat;
                     return result;
                 }
                 for(;k>=tmpD;k--){
@@ -137,16 +137,15 @@ public class TicketingDS implements TicketingSystem {
         int tmpSeat = ticket.seat;
         int tmpD = ticket.departure - 1;
         int tmpA = ticket.arrival - 1;
-        for(int i=0;i<tmpCoach;i++){
-            for(int j=0;j<tmpSeat;j++){
-                for(int k=tmpA-1;k>=tmpD;k--){
-                    routes[ticket.route-1][i][j][k].compareAndSet(true,false);
-                }
-            }
+
+        for(int i=tmpA-1;i>=tmpD;i--){
+            routes[ticket.route-1][tmpCoach][tmpSeat][i].compareAndSet(true,false);
         }
         for(int i=tmpD;i<tmpA;i++){
             ticketNum[ticket.route-1][i].getAndIncrement();
         }
+        nowCoach = tmpCoach;
+        nowSeat = tmpSeat;
         return true;
     }
 
