@@ -4,12 +4,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class TicketingDS implements TicketingSystem {
-    private static AtomicBoolean[][][][] routes;
+    private static boolean[][][][] routes;
     private static AtomicInteger[][][] ticketNum;
     private static AtomicLong tid = new AtomicLong();
 
     private static int totalCoach = 0;
     private static int totalSeat = 0;
+    private static int totalStation = 0;
     private static int nowCoach = 0;
     private static int nowSeat = 0;
     private static int totalNum;
@@ -18,16 +19,17 @@ public class TicketingDS implements TicketingSystem {
     tid.set(0);
     totalCoach = coachnum;
     totalSeat = seatnum;
+    totalStation = stationnum;
 
-    routes = new AtomicBoolean[routenum][][][];
+    routes = new boolean[routenum][][][];
     for(int i=0;i<routenum;i++){
-        routes[i] = new AtomicBoolean[coachnum][][];
+        routes[i] = new boolean[coachnum][][];
         for(int j=0;j<coachnum;j++){
-            routes[i][j] = new AtomicBoolean[seatnum][];
+            routes[i][j] = new boolean[seatnum][];
             for(int k=0;k<seatnum;k++){
-                routes[i][j][k] = new AtomicBoolean[stationnum-1];
+                routes[i][j][k] = new boolean[stationnum-1];
                 for(int l=0;l<stationnum-1;l++){
-                    routes[i][j][k][l] = new AtomicBoolean(false);
+                    routes[i][j][k][l] = false;
                 }
             }
         }
@@ -46,6 +48,8 @@ public class TicketingDS implements TicketingSystem {
 
     @Override
     public Ticket buyTicket(String passenger, int route, int departure, int arrival) {
+        //System.out.println(departure);
+        //System.out.println(arrival);
         Ticket result = new Ticket();
         int tmpCoach = nowCoach;
         int tmpSeat = nowSeat;
@@ -58,6 +62,7 @@ public class TicketingDS implements TicketingSystem {
                 j = j%totalSeat;
                 int k = tmpD;
                 boolean ifSuccess = true;
+                /*
                 for(;k<tmpA;k++){
                     if(!routes[route-1][i][j][k].compareAndSet(false,true)){
                         ifSuccess = false;
@@ -78,6 +83,52 @@ public class TicketingDS implements TicketingSystem {
                 }
                 for(;k>=tmpD;k--){
                     routes[route-1][i][j][k].compareAndSet(true,false);
+                }*/
+                synchronized (routes[route-1][i][j]){
+                    for(;k<tmpA;k++){
+                        if(routes[route-1][i][j][k]){
+                            ifSuccess = false;
+                            break;
+                        }else{
+                            routes[route-1][i][j][k] = true;
+                        }
+                    }
+                    if(ifSuccess){
+                        int startP = departure-2;
+                        int endP = arrival;
+                        for(;startP>=0;startP--){
+                            if(routes[route-1][i][j][startP]){
+                                break;
+                            }
+                        }
+                        for(;endP<totalStation;endP++){
+                            //System.out.println("enP:"+endP);
+                            if(routes[route-1][i][j][endP-1]){
+                                break;
+                            }
+                        }
+                        startP++;
+                        endP--;
+                        for(;startP<arrival;startP++){
+                            int tA = (startP+1)>(departure-1)?(startP+1):(departure-1);
+                            for(;tA<=endP;tA++){
+                                ticketNum[route-1][startP][tA].getAndDecrement();
+                            }
+                        }
+                        result.coach = tmpCoach;
+                        result.seat = tmpSeat;
+                        result.passenger = passenger;
+                        result.route = route;
+                        result.arrival = arrival;
+                        result.departure = departure;
+                        result.tid = tid.getAndIncrement();
+                        nowCoach = tmpCoach;
+                        nowSeat = tmpSeat;
+                        return result;
+                    }
+                    for(;k>=tmpD;k--){
+                        routes[route-1][i][j][k]=false;
+                    }
                 }
             }
         }
@@ -86,24 +137,7 @@ public class TicketingDS implements TicketingSystem {
 
     @Override
     public int inquiry(int route, int departure, int arrival) {
-        int result = 0;
-        int tmpD = departure - 1;
-        int tmpA = arrival - 1;
-        for(int i=0;i<totalCoach;i++){
-            for(int j=0;j<totalSeat;j++){
-                boolean ifSuccess = true;
-                for(int k = tmpD;k<tmpA;k++){
-                    if(routes[route-1][i][j][k].get()){
-                        ifSuccess = false;
-                        break;
-                    }
-                }
-                if(ifSuccess){
-                    result++;
-                }
-            }
-        }
-        return result;
+        return ticketNum[route-1][departure-1][arrival-1].get();
     }
 
     @Override
@@ -112,10 +146,33 @@ public class TicketingDS implements TicketingSystem {
         int tmpSeat = ticket.seat;
         int tmpD = ticket.departure - 1;
         int tmpA = ticket.arrival - 1;
-
-        for(int i=tmpA-1;i>=tmpD;i--){
-            routes[ticket.route-1][tmpCoach][tmpSeat][i].compareAndSet(true,false);
+        int tmpR = ticket.route-1;
+        synchronized (routes[tmpR][tmpCoach][tmpSeat]){
+            for(int i=tmpA-1;i>=tmpD;i--){
+                routes[tmpR][tmpCoach][tmpSeat][i]=false;
+            }
+            int startP = tmpD-1;
+            int endP = ticket.arrival;
+            for(;startP>=0;startP--){
+                if(routes[tmpR][tmpCoach][tmpSeat][startP]){
+                    break;
+                }
+            }
+            for(;endP<totalStation;endP++){
+                if(routes[tmpR][tmpCoach][tmpSeat][endP-1]){
+                    break;
+                }
+            }
+            startP++;
+            endP--;
+            for(;startP<ticket.arrival;startP++){
+                int tA = (startP+1)>tmpD?(startP+1):tmpD;
+                for(;tA<=endP;tA++){
+                    ticketNum[tmpR][startP][tA].getAndIncrement();
+                }
+            }
         }
+
         nowCoach = tmpCoach;
         nowSeat = tmpSeat;
         return true;
