@@ -1,6 +1,5 @@
 package ticketingsystem;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -12,7 +11,7 @@ public class TicketingDS implements TicketingSystem {
     private static int totalCoach = 0;
     private static int totalSeat = 0;
     private static int totalStation = 0;
-    private static AtomicInteger nowCoach = new AtomicInteger(0);
+    private static int nowCoach = 0;
     private static int nowSeat = 0;
     private static int totalNum;
 
@@ -49,9 +48,9 @@ public class TicketingDS implements TicketingSystem {
 
     @Override
     public Ticket buyTicket(String passenger, int route, int departure, int arrival) {
-        //System.out.println(departure);
-        //System.out.println(arrival);
         Ticket result = new Ticket();
+        //int tmpCoach =0;
+        //int tmpSeat = 0;
         int tmpCoach =new Random().nextInt(totalCoach);
         int tmpSeat = new Random().nextInt(totalSeat);
         int tmpD = departure - 1;

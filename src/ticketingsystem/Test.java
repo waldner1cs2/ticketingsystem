@@ -38,7 +38,7 @@ class TestResult {
 }
 
 public class Test {
-	private final static int[] thread_nums = {8, 16, 32, 64, 128}; // concurrent thread number
+	private final static int[] thread_nums = {2,4,8, 16, 32, 64}; // concurrent thread number
 	private final static int routenum = 3; // route is designed from 1 to 3
 	private final static int coachnum = 5; // coach is arranged from 1 to 5
 	private final static int seatnum = 20; // seat is allocated from 1 to 20
