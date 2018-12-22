@@ -1,5 +1,8 @@
 package ticketingsystem;
+import sun.util.resources.cldr.kea.TimeZoneNames_kea;
+
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -13,7 +16,8 @@ public class TicketingDS implements TicketingSystem {
     private static int totalStation = 0;
     private static int nowCoach = 0;
     private static int nowSeat = 0;
-    private static int totalNum;
+
+    private ConcurrentHashMap sold = new ConcurrentHashMap<Long,Ticket>();
 
     public TicketingDS(int routenum, int coachnum, int seatnum, int stationnum, int threadnum) {
     tid.set(0);
@@ -34,7 +38,7 @@ public class TicketingDS implements TicketingSystem {
             }
         }
     }
-    totalNum = coachnum*seatnum;
+    int totalNum = coachnum * seatnum;
 
     ticketNum = new AtomicInteger[routenum][stationnum][stationnum];
     for(int i=0;i<routenum;i++){
@@ -100,6 +104,8 @@ public class TicketingDS implements TicketingSystem {
                         result.arrival = arrival;
                         result.departure = departure;
                         result.tid = tid.getAndIncrement();
+
+                        sold.put(result.tid,result);
                         return result;
                     }
                     for(;k>=tmpD;k--){
@@ -120,6 +126,18 @@ public class TicketingDS implements TicketingSystem {
 
     @Override
     public boolean refundTicket(Ticket ticket) {
+        Ticket toJudge = (Ticket) sold.get(ticket.tid);
+        if(toJudge == null){
+            return false;
+        }else{
+            if(toJudge.arrival != ticket.arrival)return false;
+            if(toJudge.coach != ticket.coach)return false;
+            if(toJudge.departure != ticket.departure)return false;
+            if(toJudge.route != ticket.route)return false;
+            if(toJudge.passenger != ticket.passenger)return false;
+            if(toJudge.seat != ticket.seat)return false;
+        }
+
         int tmpCoach = ticket.coach;
         int tmpSeat = ticket.seat;
         int tmpD = ticket.departure - 1;
@@ -151,6 +169,7 @@ public class TicketingDS implements TicketingSystem {
             }
         }
 
+        sold.remove(ticket.tid);
         return true;
     }
 }
