@@ -51,6 +51,7 @@ public class TicketingDS implements TicketingSystem {
 
     @Override
     public Ticket buyTicket(String passenger, int route, int departure, int arrival) {
+        if(departure>=arrival||route<=0||departure<=0||arrival>totalStation)return null;
         Ticket result = new Ticket();
         //int tmpCoach =0;
         //int tmpSeat = 0;
@@ -90,8 +91,8 @@ public class TicketingDS implements TicketingSystem {
                         }
                         startP++;
                         endP--;
-                        for(;startP<arrival;startP++){
-                            int tA = (startP+1)>(departure-1)?(startP+1):(departure-1);
+                        for(;startP<arrival-1;startP++){
+                            int tA = (startP+1)>(departure)?(startP+1):(departure);
                             for(;tA<=endP;tA++){
                                 ticketNum[route-1][startP][tA].getAndDecrement();
                             }
@@ -133,7 +134,7 @@ public class TicketingDS implements TicketingSystem {
             if(toJudge.coach != ticket.coach)return false;
             if(toJudge.departure != ticket.departure)return false;
             if(toJudge.route != ticket.route)return false;
-            if(toJudge.passenger != ticket.passenger)return false;
+            if(!toJudge.passenger.equals(ticket.passenger))return false;
             if(toJudge.seat != ticket.seat)return false;
         }
 
@@ -160,8 +161,8 @@ public class TicketingDS implements TicketingSystem {
             }
             startP++;
             endP--;
-            for(;startP<ticket.arrival;startP++){
-                int tA = (startP+1)>tmpD?(startP+1):tmpD;
+            for(;startP<tmpA;startP++){
+                int tA = (startP+1)>tmpD+1?(startP+1):tmpD+1;
                 for(;tA<=endP;tA++){
                     ticketNum[tmpR][startP][tA].getAndIncrement();
                 }
