@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding" defaultCharsetForPropertiesFiles="UTF-8" addBOMForNewFiles="with NO BOM">
+    <file url="file://$PROJECT_DIR$/src/ticketingsystem/Test.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/ticketingsystem/TicketingDS.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/ticketingsystem/TicketingSystem.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/ticketingsystem/Trace.java" charset="UTF-8" />
     <file url="PROJECT" charset="UTF-8" />
   </component>
 </project>

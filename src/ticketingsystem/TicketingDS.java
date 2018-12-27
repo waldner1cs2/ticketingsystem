@@ -1,5 +1,4 @@
 package ticketingsystem;
-import sun.util.resources.cldr.kea.TimeZoneNames_kea;
 
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,8 +13,8 @@ public class TicketingDS implements TicketingSystem {
     private static int totalCoach = 0;
     private static int totalSeat = 0;
     private static int totalStation = 0;
-    private static int nowCoach = 0;
-    private static int nowSeat = 0;
+    //private static int nowCoach = 0;
+    //private static int nowSeat = 0;
 
     private ConcurrentHashMap sold = new ConcurrentHashMap<Long,Ticket>();
 
