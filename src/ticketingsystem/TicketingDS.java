@@ -16,7 +16,7 @@ public class TicketingDS implements TicketingSystem {
     //private static int nowCoach = 0;
     //private static int nowSeat = 0;
 
-    private ConcurrentHashMap sold = new ConcurrentHashMap<Long,Ticket>();
+    private ConcurrentHashMap<Long,Ticket> sold = new ConcurrentHashMap<>();
 
     public TicketingDS(int routenum, int coachnum, int seatnum, int stationnum, int threadnum) {
     tid.set(0);
